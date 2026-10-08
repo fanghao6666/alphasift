@@ -155,6 +155,28 @@ def rank_candidates_with_metadata(
                 timeout_sec=timeout_sec,
                 max_tokens=max_tokens,
             )
+            if json_mode and not response.strip():
+                logger.warning(
+                    "LLM returned empty content in JSON mode; retrying without response_format"
+                )
+                if degradation is not None:
+                    degradation.append(
+                        "LLM JSON mode returned empty content; retried without response_format"
+                    )
+                response = _call_llm(
+                    attempt_prompt,
+                    llm_api_key,
+                    llm_model,
+                    llm_base_url,
+                    fallback_models=fallback_models or [],
+                    temperature=temperature,
+                    json_mode=False,
+                    silent=silent,
+                    channels=channels or [],
+                    config_path=config_path,
+                    timeout_sec=timeout_sec,
+                    max_tokens=max_tokens,
+                )
             parsed = _parse_ranking_response_detail(response, candidates)
             last_errors = parsed.errors
             if parsed.coverage >= min_coverage:
@@ -230,7 +252,7 @@ def _render_ranking_prompt(hints: str, context: str, candidates_text: str) -> st
 {candidates_text}
 
 ## 输出要求
-只返回 JSON，不要 Markdown，不要解释 JSON 以外的文本。
+请只返回一个合法的 json 对象，不要 Markdown，不要输出对象以外的文本。
 格式：
 {{
   "market_view": "一句话概括当前候选池和市场背景是否适合该策略",
