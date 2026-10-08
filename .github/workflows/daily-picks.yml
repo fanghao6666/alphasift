@@ -1,0 +1,43 @@
+name: Daily A-share picks
+
+on:
+  workflow_dispatch:
+  schedule:
+    # 16:00 China Standard Time on weekdays (GitHub cron uses UTC).
+    - cron: "0 8 * * 1-5"
+
+permissions:
+  contents: read
+
+jobs:
+  screen-and-notify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install AlphaSift
+        run: python -m pip install -e .
+      - name: Screen the full A-share market and rank candidates with AI
+        env:
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          LITELLM_MODEL: deepseek/deepseek-chat
+          LLM_TEMPERATURE: "0.1"
+          LLM_MAX_CANDIDATES: "30"
+          LLM_CANDIDATE_CONTEXT_ENABLED: "false"
+          ALPHASIFT_DATA_DIR: ./data
+        run: alphasift screen steady_long_term --max-output 5 --save-run --output data/daily-result.json
+      - name: Send daily result to Feishu
+        env:
+          FEISHU_WEBHOOK_URL: ${{ secrets.FEISHU_WEBHOOK_URL }}
+        run: python scripts/daily_feishu.py data/daily-result.json
+      - name: Keep report as a downloadable artifact
+        if: always() && hashFiles('data/daily-result.json') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: daily-picks-${{ github.run_id }}
+          path: data/daily-result.json
+          retention-days: 30

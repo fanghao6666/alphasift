@@ -40,6 +40,10 @@ alphasift screen dual_low --no-llm
 # 执行选股（使用 LLM 排序，需要配置 LLM_API_KEY）
 alphasift screen dual_low
 
+# 每日稳健中长期候选（最多 5 只；AI 辅助解释和排序）
+alphasift screen steady_long_term --max-output 5 --save-run --output data/daily-result.json
+python scripts/daily_feishu.py data/daily-result.json
+
 # 复用其他项目的 LLM 配置文件
 alphasift --env-file /home/ubuntu/daily_ai_assistant/.env screen balanced_alpha
 
@@ -118,6 +122,30 @@ $ alphasift screen dual_low --no-llm
 | 3 | 300803 | 指南针 | 73.3 | 101.68 | +3.07% |
 | 4 | 002384 | 东山精密 | 73.0 | 143.55 | +8.83% |
 | 5 | 300277 | 汽轮科技 | 73.0 | 19.74 | +5.73% |
+
+## 本项目的每日飞书 MVP
+
+仓库附带 `steady_long_term` 策略和 `.github/workflows/daily-picks.yml`：工作日北京时间 16:00 扫描全 A 股，用规则过滤与打分，再由 AI 对候选做辅助排序和解释，最多推送 5 只到飞书。没有合格候选时会推送空榜；AI 失败时 AlphaSift 会按规则分回退，但消息会标记 AI 未成功。
+
+### 配置 GitHub Actions
+
+1. 将仓库 Fork 到自己的 GitHub 账号，并在仓库的 **Settings → Secrets and variables → Actions** 添加：
+   - `FEISHU_WEBHOOK_URL`：飞书群自定义机器人的 Webhook。
+   - `DEEPSEEK_API_KEY`：DeepSeek API Key。模型固定为 `deepseek/deepseek-chat`；如要换模型，可修改 workflow 中的 `LITELLM_MODEL`。
+2. 在 **Actions** 页面启用 workflows，然后运行 **Daily A-share picks → Run workflow** 做一次手动验证。
+3. 检查飞书消息和运行日志。GitHub Actions 的定时任务以 UTC 计时，当前配置对应北京时间工作日 16:00 左右。
+
+密钥只放在 GitHub Secrets 或本机 `.env`，不要提交到仓库。AI 只处理规则筛出的候选，不负责决定是否交易，也不能补全缺失的财务事实。免费行情源可能限流或变化；消息会展示数据源状态，行情快照不可用时停止推送。
+
+### 本机手动运行
+
+复制 `.env.example` 为 `.env`，填写 `DEEPSEEK_API_KEY` 和 `FEISHU_WEBHOOK_URL` 后运行：
+
+```bash
+python -m pip install -e .
+alphasift screen steady_long_term --max-output 5 --save-run --output data/daily-result.json
+python scripts/daily_feishu.py data/daily-result.json
+```
 
 ## 环境变量
 
