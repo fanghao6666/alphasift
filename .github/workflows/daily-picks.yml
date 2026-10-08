@@ -39,7 +39,8 @@ jobs:
         if: steps.credentials.outputs.ready == 'true'
         env:
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
-          LITELLM_MODEL: deepseek/deepseek-v4-flash
+          LITELLM_MODEL: deepseek/deepseek-flash
+          LLM_REASONING_EFFORT: none
           LLM_TEMPERATURE: "0.1"
           LLM_CANDIDATE_MULTIPLIER: "2"
           LLM_MAX_CANDIDATES: "8"

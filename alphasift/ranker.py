@@ -542,6 +542,9 @@ def _call_llm(
             kwargs["temperature"] = temperature
             kwargs["timeout"] = timeout_sec
             kwargs["num_retries"] = 0
+            reasoning_effort = os.getenv("LLM_REASONING_EFFORT", "").strip()
+            if reasoning_effort:
+                kwargs["reasoning_effort"] = reasoning_effort
             if max_tokens is not None and int(max_tokens) > 0:
                 kwargs["max_tokens"] = int(max_tokens)
             if json_mode:

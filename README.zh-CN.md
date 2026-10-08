@@ -131,7 +131,7 @@ $ alphasift screen dual_low --no-llm
 
 1. 将仓库 Fork 到自己的 GitHub 账号，并在仓库的 **Settings → Secrets and variables → Actions** 添加：
    - `FEISHU_WEBHOOK_URL`：飞书群自定义机器人的 Webhook。
-   - `DEEPSEEK_API_KEY`：DeepSeek API Key。默认模型为 `deepseek/deepseek-v4-flash`；如要换模型，可修改 workflow 中的 `LITELLM_MODEL`。
+   - `DEEPSEEK_API_KEY`：DeepSeek API Key。默认模型为 `deepseek/deepseek-flash`，已关闭思考模式以减少空白结构化回答；如要换模型，可修改 workflow 中的 `LITELLM_MODEL` 和 `LLM_REASONING_EFFORT`。
 2. 在 **Actions** 页面启用 workflows，然后运行 **Daily A-share picks → Run workflow** 做一次手动验证。
 3. 检查飞书消息和运行日志。GitHub Actions 的定时任务以 UTC 计时，当前配置对应北京时间工作日 16:00 左右。
 
