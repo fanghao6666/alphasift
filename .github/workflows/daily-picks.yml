@@ -39,9 +39,12 @@ jobs:
         if: steps.credentials.outputs.ready == 'true'
         env:
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
-          LITELLM_MODEL: deepseek/deepseek-chat
+          LITELLM_MODEL: deepseek/deepseek-v4-flash
           LLM_TEMPERATURE: "0.1"
-          LLM_MAX_CANDIDATES: "30"
+          LLM_CANDIDATE_MULTIPLIER: "2"
+          LLM_MAX_CANDIDATES: "8"
+          LLM_MAX_TOKENS: "4096"
+          LLM_JSON_MODE: "true"
           LLM_CANDIDATE_CONTEXT_ENABLED: "false"
           ALPHASIFT_DATA_DIR: ./data
         run: alphasift screen steady_long_term --max-output 5 --save-run --output data/daily-result.json
